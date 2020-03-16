@@ -32,4 +32,4 @@ Temos neste repositório uma aplicação em Kotlin simples com uma API REST que 
 Clone esse repositório e commite todas as modificações, depois que terminar, compacte o repositorio e nos envie, queremos analisar seus commits.
 
 
-Versão do Gradle: 4.10
+ **Versão do Gradle: 4.10**
