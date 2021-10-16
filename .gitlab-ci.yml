@@ -10,7 +10,9 @@ variables:
     - echo -n $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin 
 
 .helm:
-  image: alpine/helm:3.2.1
+  image: 
+    name: alpine/helm:3.2.1
+    entrypoint: [""] 
   tags:
     - docker  
 

@@ -5,10 +5,10 @@
 replicaCount: 1
 
 image:
-  repository: jonathan99/app-challenge-helloworld
+  repository: ""
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "latest"
+  tag: ""
 
 imagePullSecrets: []
 nameOverride: ""
@@ -80,3 +80,7 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+overrideValues:
+  image.repository: $CI_REGISTRY_USER/${SERVICE}
+  image.tags: ${CI_PIPELINE_ID}
