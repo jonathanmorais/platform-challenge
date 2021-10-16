@@ -18,4 +18,5 @@ Build:
   variables:
     SERVICE: "app-challenge-helloworld"
   tags:
-    - 8a6210b8  
+    - gitlab-org
+  
