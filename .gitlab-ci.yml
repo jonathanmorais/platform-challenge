@@ -1,22 +1,46 @@
+variables:
+  SERVICE: "app-challenge-helloworld"
+  MODULE: "helm"
+
 .docker:
-  image: docker:20
+  image: wedneyyuri/awscli-dind
   services:
-    - docker:18.09-dind
+      - docker:18.09-dind
   before_script:
-    - echo -n ${CI_REGISTRY_PASSWORD} | docker login -u ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY}    
+    - echo -n $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin 
+
+.helm:
+  image: alpine/helm:3.2.1
 
 stages:
-  - Build
-  - Deploy
+  - build
+  - package
+  - deploy
 
-Build:
+buld:
   extends: .docker
-  stage: Build
+  stage: build
   script:
-    - docker build -t ${DOCKER_REGISTRY}/$SERVICE:${CI_PIPELINE_ID} -f ${CI_PROJECT_DIR}/parte1/docker/Dockerfile .
-    - docker push ${DOCKER_REGISTRY}/$SERVICE:${CI_PIPELINE_ID}
-  variables:
-    SERVICE: "app-challenge-helloworld"
+    - docker build -t $CI_REGISTRY_USER/${SERVICE}:${CI_PIPELINE_ID} -f ${CI_PROJECT_DIR}/parte1/docker/Dockerfile .
+    - docker push $CI_REGISTRY_USER/${SERVICE}:${CI_PIPELINE_ID}
   tags:
-    - gitlab-org
+    - docker
   
+packing:
+  extends: .helm
+  stage: package
+  script:
+    - helm package ${CI_PROJECT_DIR}/parte1/${MODULE}/${SERVICE} --app-version ${CI_PIPELINE_ID} --version CI_COMMIT_SHORT_SHA
+    - curl --request POST --form 'chart=@${SERVICE}-CI_COMMIT_SHORT_SHA.tgz' \
+     --user $GITLAB_USER:$ACCESS_TOKEN  \
+     https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/packages/helm/api/stable/charts
+
+deploy:
+  stage: deploy
+  script:
+    - helm upgrade ${SERVICE} ${CI_PROJECT_DIR}/parte1/${MODULE}/helloword --namespace ${SERVICE}
+  rules:
+    - if: $CI_COMMIT_BRANCH == 'main'
+      when: always
+  dependencies:
+    - packing   
