@@ -17,3 +17,5 @@ Build:
     - docker push $DOCKER_REGISTRY/$SERVICE:$CI_PIPELINE_ID
   variables:
     SERVICE: "app-challenge-helloworld"
+  tags:
+    - 8a6210b8  
