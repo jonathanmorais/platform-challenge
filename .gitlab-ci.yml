@@ -30,8 +30,8 @@ package:
   extends: .helm
   stage: package
   script:
-    - helm package ${CI_PROJECT_DIR}/parte1/${MODULE}/${SERVICE} --app-version ${CI_PIPELINE_ID} --version CI_COMMIT_SHORT_SHA
-    - curl --request POST --form 'chart=@${SERVICE}-CI_COMMIT_SHORT_SHA.tgz' \
+    - helm package ${CI_PROJECT_DIR}/parte1/${MODULE}/${SERVICE} --app-version ${CI_PIPELINE_ID} --version ${CI_COMMIT_SHORT_SHA}
+    - curl --request POST --form 'chart=@${SERVICE}-${CI_COMMIT_SHORT_SHA}.tgz' \
      --user $GITLAB_USER:$ACCESS_TOKEN  \
      https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/packages/helm/api/stable/charts
 
