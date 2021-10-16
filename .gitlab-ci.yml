@@ -1,0 +1,19 @@
+.docker:
+  image: docker:20
+  services:
+    - docker:18.09-dind
+  before_script:
+    - echo -n $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY    
+
+stages:
+  - Build
+  - Deploy
+
+Build:
+  extends: .docker
+  stage: Build
+  script:
+    - docker build -t $DOCKER_REGISTRY/$SERVICE:$CI_PIPELINE_ID -f $CI_PROJECT_DIR/parte1/docker/Dockerfile .
+    - docker push $DOCKER_REGISTRY/$SERVICE:$CI_PIPELINE_ID
+  variables:
+    SERVICE: "app-challenge-helloworld"
