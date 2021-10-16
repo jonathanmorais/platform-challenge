@@ -36,9 +36,8 @@ package:
   extends: .helm
   stage: package
   script:
-    - helm package ${CI_PROJECT_DIR}/parte1/${MODULE}/helloworld --version 0.1.3
-    - curl --request POST --form 'chart=@helloworld-0.1.3.tgz' \
-     --user $GITLAB_USER:$ACCESS_TOKEN https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/packages/helm/api/stable/charts
+    - helm package ${CI_PROJECT_DIR}/parte1/${MODULE}/helloworld --version 0.1.4
+    - curl --request POST --form 'chart=@helloworld-0.1.4.tgz' --user $GITLAB_USER:$ACCESS_TOKEN https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/packages/helm/api/stable/charts
 
 deploy:
   extends: .helm
