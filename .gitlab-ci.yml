@@ -11,6 +11,8 @@ variables:
 
 .helm:
   image: alpine/helm:3.2.1
+  tags:
+    - docker  
 
 stages:
   - build
@@ -32,10 +34,10 @@ package:
   script:
     - helm package ${CI_PROJECT_DIR}/parte1/${MODULE}/helloworld --app-version ${CI_PIPELINE_ID} --version ${CI_COMMIT_SHORT_SHA}
     - curl --request POST --form 'chart=@${SERVICE}-${CI_COMMIT_SHORT_SHA}.tgz' \
-     --user $GITLAB_USER:$ACCESS_TOKEN  \
-     https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/packages/helm/api/stable/charts
+     --user $GITLAB_USER:$ACCESS_TOKEN https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/packages/helm/api/stable/charts
 
 deploy:
+  extends: .helm
   stage: deploy
   script:
     - helm upgrade ${SERVICE} ${CI_PROJECT_DIR}/parte1/${MODULE}/helloword --namespace ${SERVICE}
