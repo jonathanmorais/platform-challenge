@@ -12,7 +12,9 @@ variables:
 .helm:
   image: 
     name: alpine/helm:3.2.1
-    entrypoint: [""] 
+    entrypoint: [""]
+  before_script:
+    - apk add curl  
   tags:
     - docker  
 
