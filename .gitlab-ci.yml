@@ -129,4 +129,4 @@ deploy:terraform:service:apply:
   script:
     - cd $CI_PROJECT_DIR/parte2/infra/terraform/environments/${ENVIRONMENT}
     - terraform init    
-    - terraform apply -auto-approve -target=module.app-helloword
+    - terraform apply -auto-approve -target=module.app-helloworld
