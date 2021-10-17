@@ -3,7 +3,6 @@ variables:
   NAME: "helloworld" 
   SERVICE: ${TYPE}-${NAME}
   MODULE: "helm"
-  KUBECONFIG: /etc/deploy/config
 
 .docker:
   image: wedneyyuri/awscli-dind
@@ -61,7 +60,6 @@ deploy:helm:
     stage: deploy
     image: jakexks/kubectl-helm-aws
     before_script:
-        - echo ${kube_config} | base64 -d > ${KUBECONFIG}    
         - aws --version
         - helm version
     script:
@@ -78,7 +76,6 @@ rollback:helm:
     stage: rollback
     image: jakexks/kubectl-helm-aws
     before_script:
-        - echo ${kube_config} | base64 -d > ${KUBECONFIG}    
         - aws --version
         - helm version
     script:
