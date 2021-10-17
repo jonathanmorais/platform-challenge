@@ -14,20 +14,32 @@ variables:
   tags:
     - docker
 
-.helm:
+.template_helm: &helm
   image: 
     name: alpine/helm:3.2.1
     entrypoint: [""]
   before_script:
     - apk add curl  
   tags:
-    - docker  
+    - docker
+
+.template_terraform: &terraform
+  image:
+    name: 280917728158.dkr.ecr.us-east-1.amazonaws.com/ci/hashicorp/terraform:0.12.18
+    entrypoint: [""]
+  script:
+    - cd $CI_PROJECT_DIR/parte2/infra/terraform/environments/${ENVIRONMENT}
+    - terraform init
+  tags:
+    - docker
 
 stages:
   - build
   - package
   - deploy
   - rollback
+  - plan
+  - apply
 
 build:
   extends: .docker
@@ -39,13 +51,13 @@ build:
     - docker
 
 package:
-  extends: .helm
+  <<: *helm
   stage: package
   script:
     - helm package ${CI_PROJECT_DIR}/parte1/${MODULE}/${SERVICE} --version $CI_COMMIT_TAG
     - curl --request POST --form 'chart=@${SERVICE}-$CI_COMMIT_TAG.tgz' --user $GITLAB_USER:$ACCESS_TOKEN https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/packages/helm/api/stable/charts
 
-deploy:
+deploy:helm:
     stage: deploy
     image: jakexks/kubectl-helm-aws
     before_script:
@@ -60,9 +72,9 @@ deploy:
     only:
         - master
     dependencies:
-        - package 
+        - package
 
-rollback:
+rollback:helm:
     stage: rollback
     image: jakexks/kubectl-helm-aws
     before_script:
@@ -72,6 +84,49 @@ rollback:
     script:
         - aws eks update-kubeconfig --name ${EKS_CLUSTER} --region ${EKS_REGION} --role-arn {EKS_ROLE}
         - helm rollback ${SERVICE}
-    dependencies:
-        - deploy
     when: manual
+
+## tf
+deploy:terraform:plan:
+  <<: *terraform
+  stage: plan
+  variables:
+    ENVIRONMENT: "prod"
+    AWS_ACCESS_KEY_ID: $PROD_AWS_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY: $PROD_AWS_SECRET_ACCESS_KEY
+  before_script:
+    - export TF_VAR_image=$CI_COMMIT_TAG
+    - export TF_VAR_image_tag=$CI_REGISTRY_USER/${SERVICE}
+  script: 
+    - terraform plan
+
+deploy:terraform:infra:apply:
+  <<: *terraform
+  stage: apply
+  variables:
+    ENVIRONMENT: "prod"
+    AWS_ACCESS_KEY_ID: $PROD_AWS_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY: $PROD_AWS_SECRET_ACCESS_KEY
+  before_script:
+    - export TF_VAR_image=$CI_COMMIT_TAG:${CI_PIPELINE_ID}
+    - export TF_VAR_image_tag=$CI_REGISTRY_USER/${SERVICE}
+  script:
+    - cd $CI_PROJECT_DIR/parte2/infra/terraform/environments/${ENVIRONMENT}
+    - terraform init    
+    - terraform apply -auto-approve -target=module.network -target=module.cluster
+  when: manual
+ 
+deploy:terraform:service:apply:
+  <<: *terraform
+  stage: apply
+  variables:
+    ENVIRONMENT: "prod"
+    AWS_ACCESS_KEY_ID: $PROD_AWS_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY: $PROD_AWS_SECRET_ACCESS_KEY
+  before_script:
+    - export TF_VAR_image=$CI_COMMIT_TAG:${CI_PIPELINE_ID}
+    - export TF_VAR_image_tag=$CI_REGISTRY_USER/${SERVICE}
+  script:
+    - cd $CI_PROJECT_DIR/parte2/infra/terraform/environments/${ENVIRONMENT}
+    - terraform init    
+    - terraform apply -auto-approve -target=module.app-helloword
