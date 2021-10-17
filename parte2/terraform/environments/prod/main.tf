@@ -40,14 +40,14 @@ module "network" {
 
 module "cluster" {
   source = "../../modules/ecs-cluster"
-  name   = "helloword-cluster"
+  name   = "helloworld-cluster"
 }
 
-module "app-helloword" {
+module "app-helloworld" {
   source  = "../../modules/ecs-service"
   cluster = module.cluster.aws_ecs_cluster_cluster_name
   application = {
-    name        = "app-helloword"
+    name        = "app-helloworld"
     version     = "v1"
     environment = "prod"
   }
