@@ -21,6 +21,8 @@ variables:
     - apk add curl  
   tags:
     - docker
+  only:
+      - tags
 
 .template_terraform: &terraform
   image:
@@ -67,8 +69,6 @@ deploy:helm:
         - helm upgrade ${SERVICE} ${CI_PROJECT_DIR}/parte1/${MODULE}/${SERVICE} \
             --repo $CI_REGISTRY_USER/${SERVICE}:${CI_PIPELINE_ID} \
             --version $CI_COMMIT_TAG
-    only:
-        - master
     dependencies:
         - package
 
@@ -96,6 +96,8 @@ deploy:terraform:plan:
     - export TF_VAR_image_tag=$CI_REGISTRY_USER/${SERVICE}
   script: 
     - terraform plan
+  only:
+    - tags    
 
 deploy:terraform:infra:apply:
   <<: *terraform
@@ -104,14 +106,12 @@ deploy:terraform:infra:apply:
     ENVIRONMENT: "prod"
     AWS_ACCESS_KEY_ID: $PROD_AWS_ACCESS_KEY_ID
     AWS_SECRET_ACCESS_KEY: $PROD_AWS_SECRET_ACCESS_KEY
-  before_script:
-    - export TF_VAR_image=$CI_COMMIT_TAG:${CI_PIPELINE_ID}
-    - export TF_VAR_image_tag=$CI_REGISTRY_USER/${SERVICE}
   script:
     - cd $CI_PROJECT_DIR/parte2/infra/terraform/environments/${ENVIRONMENT}
     - terraform init    
     - terraform apply -auto-approve -target=module.network -target=module.cluster
-  when: manual
+  only:
+    - tags    
  
 deploy:terraform:service:apply:
   <<: *terraform
@@ -121,9 +121,12 @@ deploy:terraform:service:apply:
     AWS_ACCESS_KEY_ID: $PROD_AWS_ACCESS_KEY_ID
     AWS_SECRET_ACCESS_KEY: $PROD_AWS_SECRET_ACCESS_KEY
   before_script:
-    - export TF_VAR_image=$CI_COMMIT_TAG:${CI_PIPELINE_ID}
-    - export TF_VAR_image_tag=$CI_REGISTRY_USER/${SERVICE}
+    - export TF_VAR_image=$CI_REGISTRY_USER/${SERVICE}
+    - export TF_VAR_image_tag=$CI_COMMIT_TAG
   script:
     - cd $CI_PROJECT_DIR/parte2/infra/terraform/environments/${ENVIRONMENT}
     - terraform init    
     - terraform apply -auto-approve -target=module.app-helloworld
+  only:
+    - tags
+    - master
