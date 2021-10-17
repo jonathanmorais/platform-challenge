@@ -1,6 +1,9 @@
 variables:
-  SERVICE: "app-challenge-helloworld"
+  TYPE: "app"
+  NAME: "helloworld" 
+  SERVICE: ${TYPE}-${SERVICE}"
   MODULE: "helm"
+  KUBECONFIG: /etc/deploy/config
 
 .docker:
   image: wedneyyuri/awscli-dind
@@ -8,6 +11,8 @@ variables:
       - docker:18.09-dind
   before_script:
     - echo -n $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin 
+  tags:
+    - docker
 
 .helm:
   image: 
@@ -29,23 +34,27 @@ buld:
   script:
     - docker build -t $CI_REGISTRY_USER/${SERVICE}:${CI_PIPELINE_ID} -f ${CI_PROJECT_DIR}/parte1/docker/Dockerfile .
     - docker push $CI_REGISTRY_USER/${SERVICE}:${CI_PIPELINE_ID}
-  tags:
-    - docker
   
 package:
   extends: .helm
   stage: package
   script:
-    - helm package ${CI_PROJECT_DIR}/parte1/${MODULE}/helloworld --version 0.1.4
-    - curl --request POST --form 'chart=@helloworld-0.1.4.tgz' --user $GITLAB_USER:$ACCESS_TOKEN https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/packages/helm/api/stable/charts
+    - helm package ${CI_PROJECT_DIR}/parte1/${MODULE}/${SERVICE} --version $CI_COMMIT_TAG
+    - curl --request POST --form 'chart=@${SERVICE}-$CI_COMMIT_TAG.tgz' --user $GITLAB_USER:$ACCESS_TOKEN https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/packages/helm/api/stable/charts
 
 deploy:
-  extends: .helm
-  stage: deploy
-  script:
-    - helm upgrade ${SERVICE} ${CI_PROJECT_DIR}/parte1/${MODULE}/helloword --namespace ${SERVICE}
-  rules:
-    - if: $CI_COMMIT_BRANCH == 'main'
-      when: always
+    stage: deploy
+    image: jakexks/kubectl-helm-aws
+    before_script:
+      - echo ${kube_config} | base64 -d > ${KUBECONFIG}    
+      - aws --version
+      - helm version
+    script:
+      - aws eks update-kubeconfig --name ${EKS_CLUSTER} --region ${EKS_REGION} --role-arn {EKS_ROLE}
+      - helm upgrade ${SERVICE} ${CI_PROJECT_DIR}/parte1/${MODULE}/${SERVICE} \
+        --repo $CI_REGISTRY_USER/${SERVICE}:${CI_PIPELINE_ID} \
+        --version $CI_COMMIT_TAG
+    only:
+      - master
   dependencies:
     - package   
