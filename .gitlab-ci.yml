@@ -34,7 +34,9 @@ build:
   script:
     - docker build -t $CI_REGISTRY_USER/${SERVICE}:${CI_PIPELINE_ID} -f ${CI_PROJECT_DIR}/parte1/docker/Dockerfile .
     - docker push $CI_REGISTRY_USER/${SERVICE}:${CI_PIPELINE_ID}
-  
+  tags:
+    - docker
+
 package:
   extends: .helm
   stage: package
