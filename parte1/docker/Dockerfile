@@ -1,4 +1,4 @@
-FROM gradle:4.2.1-jdk8-alpine as build
+FROM gradle:5.0 as build
 
 USER root
 
