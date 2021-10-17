@@ -27,6 +27,7 @@ stages:
   - build
   - package
   - deploy
+  - rollback
 
 build:
   extends: .docker
@@ -60,3 +61,17 @@ deploy:
         - master
     dependencies:
         - package 
+
+rollback:
+    stage: rollback
+    image: jakexks/kubectl-helm-aws
+    before_script:
+        - echo ${kube_config} | base64 -d > ${KUBECONFIG}    
+        - aws --version
+        - helm version
+    script:
+        - aws eks update-kubeconfig --name ${EKS_CLUSTER} --region ${EKS_REGION} --role-arn {EKS_ROLE}
+        - helm rollback ${SERVICE}
+    dependencies:
+        - deploy
+    when: manual
