@@ -65,7 +65,7 @@ deploy:helm:
     stage: deploy
     image: jshimko/kube-tools-aws:latest
     variables:
-      AWS_REGION: $AWS_REGION
+      AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
       AWS_ACCESS_KEY_ID: $PROD_AWS_ACCESS_KEY_ID
       AWS_SECRET_ACCESS_KEY: $PROD_AWS_SECRET_ACCESS_KEY        
     before_script:
