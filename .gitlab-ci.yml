@@ -66,7 +66,6 @@ deploy:helm:
     image: jakexks/kubectl-helm-aws
     before_script:
         - aws --version
-        - helm version
     script:
         - aws eks update-kubeconfig --name ${EKS_CLUSTER} --region ${AWS_REGION}
         - helm upgrade --install -f ${CI_PROJECT_DIR}/parte1/${MODULE}/${SERVICE}/values.yaml \
