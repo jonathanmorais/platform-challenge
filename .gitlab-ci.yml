@@ -62,8 +62,8 @@ package:
     expire_in: 4 week   
 
 deploy:terraform:helm:
-    stage: deploy
      <<: *terraform 
+    stage: deploy
     variables:
       AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
       AWS_ACCESS_KEY_ID: $PROD_AWS_ACCESS_KEY_ID
