@@ -72,7 +72,7 @@ infra:terraform:plan:
     - export TF_VAR_image=$CI_COMMIT_TAG
     - export TF_VAR_image_tag=$CI_REGISTRY_USER/${SERVICE}
   script: 
-    - terraform plan
+    - cd $CI_PROJECT_DIR/parte2/terraform/environments/${ENVIRONMENT} terraform init && terraform plan
   only:
     - tags
   
