@@ -61,31 +61,20 @@ package:
       - ${SERVICE}-$CI_COMMIT_TAG.tgz
     expire_in: 4 week   
 
-deploy:helm:
+deploy:terraform:helm:
     stage: deploy
-    image: 
-      name: subhakarkotta/terraform-kubectl-helm-awscli:latest
-      entrypoint: [""]
+     <<: *terraform 
     variables:
       AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
       AWS_ACCESS_KEY_ID: $PROD_AWS_ACCESS_KEY_ID
       AWS_SECRET_ACCESS_KEY: $PROD_AWS_SECRET_ACCESS_KEY        
-    before_script:
-        - aws --version
     script:
-        - export AWS_ACCESS_KEY_ID=$PROD_AWS_ACCESS_KEY_ID
-        - export AWS_SECRET_ACCESS_KEY=$PROD_AWS_SECRET_ACCESS_KEY
-        - export AWS_DEFAULT_REGION=us-east-1
-        - aws sts get-caller-identity
-        - aws eks update-kubeconfig --name cluster-test --region us-east-1
-        - helm upgrade --install -f ${CI_PROJECT_DIR}/parte1/${MODULE}/${SERVICE}/values.yaml \
-           ${SERVICE} ${CI_PROJECT_DIR}/parte1/${MODULE}/${SERVICE} --version $CI_COMMIT_TAG
+      cd parte1/${MODULE}/terraform && terraform init && terraform apply -var-file="stg.tfvars" --auto-approve
     dependencies:
         - package
     only:
       - tags    
 
-## tf
 deploy:terraform:plan:
   <<: *terraform
   stage: plan
@@ -99,8 +88,9 @@ deploy:terraform:plan:
   script: 
     - terraform plan
   only:
-    - tags    
-
+    - tags
+  when: manual
+  
 deploy:terraform:infra:apply:
   <<: *terraform
   stage: apply
@@ -114,6 +104,7 @@ deploy:terraform:infra:apply:
     - terraform apply -auto-approve -target=module.network -target=module.cluster
   only:
     - tags
+  when: manual  
  
 deploy:terraform:service:apply:
   <<: *terraform
