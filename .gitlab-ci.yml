@@ -24,7 +24,7 @@ variables:
 
 .template_terraform: &terraform
   image:
-    name: 280917728158.dkr.ecr.us-east-1.amazonaws.com/ci/hashicorp/terraform:0.12.18
+    name: hashicorp/terraform:0.12.31
     entrypoint: [""]
   script:
     - cd $CI_PROJECT_DIR/parte2/infra/terraform/environments/${ENVIRONMENT}
@@ -63,7 +63,7 @@ package:
 
 deploy:helm:
     stage: deploy
-    image: jakexks/kubectl-helm-aws
+    image: jshimko/kube-tools-aws:latest
     before_script:
         - aws --version
     script:
@@ -77,7 +77,7 @@ deploy:helm:
 
 rollback:helm:
     stage: rollback
-    image: jakexks/kubectl-helm-aws
+    image: jshimko/kube-tools-aws:latest
     before_script:
         - aws --version
         - helm version
