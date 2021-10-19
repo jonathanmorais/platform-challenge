@@ -73,6 +73,9 @@ deploy:helm:
     before_script:
         - aws --version
     script:
+        - export AWS_ACCESS_KEY_ID=$PROD_AWS_ACCESS_KEY_ID
+        - export AWS_SECRET_ACCESS_KEY=$PROD_AWS_SECRET_ACCESS_KEY
+        - export AWS_DEFAULT_REGION=us-east-1
         - aws eks update-kubeconfig --name ${EKS_CLUSTER}
         - helm upgrade --install -f ${CI_PROJECT_DIR}/parte1/${MODULE}/${SERVICE}/values.yaml \
            ${SERVICE} ${CI_PROJECT_DIR}/parte1/${MODULE}/${SERVICE} --version $CI_COMMIT_TAG
