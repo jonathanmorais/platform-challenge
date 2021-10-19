@@ -12,6 +12,8 @@ variables:
     - echo -n $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin 
   tags:
     - docker
+    - gitlab-org-docker
+
 
 .template_helm: &helm
   image: 
@@ -21,6 +23,7 @@ variables:
     - apk add curl  
   tags:
     - docker
+    - gitlab-org-docker
 
 .template_terraform: &terraform
   image:
@@ -32,6 +35,7 @@ variables:
     - export AWS_DEFAULT_REGION=us-east-1
   tags:
     - docker
+    - gitlab-org-docker
 
 stages:
   - build
