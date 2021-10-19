@@ -77,28 +77,13 @@ deploy:helm:
         - export AWS_SECRET_ACCESS_KEY=$PROD_AWS_SECRET_ACCESS_KEY
         - export AWS_DEFAULT_REGION=us-east-1
         - aws sts get-caller-identity
-        - aws eks update-kubeconfig --name ${EKS_CLUSTER} --region us-east-1 --role-arn arn:aws:iam::670444537637:role/terraform-eks-demo-cluster
+        - aws eks update-kubeconfig --name cluster-test --region us-east-1
         - helm upgrade --install -f ${CI_PROJECT_DIR}/parte1/${MODULE}/${SERVICE}/values.yaml \
            ${SERVICE} ${CI_PROJECT_DIR}/parte1/${MODULE}/${SERVICE} --version $CI_COMMIT_TAG
     dependencies:
         - package
     only:
       - tags    
-
-rollback:helm:
-    stage: rollback
-    image: jshimko/kube-tools-aws:latest
-    variables:
-      ENVIRONMENT: "prod"
-      AWS_ACCESS_KEY_ID: $PROD_AWS_ACCESS_KEY_ID
-      AWS_SECRET_ACCESS_KEY: $PROD_AWS_SECRET_ACCESS_KEY
-    before_script:
-        - aws --version
-        - helm version
-    script:
-        - aws eks update-kubeconfig --name ${EKS_CLUSTER} --region ${EKS_REGION} --role-arn {EKS_ROLE}
-        - helm rollback ${SERVICE}
-    when: manual
 
 ## tf
 deploy:terraform:plan:
