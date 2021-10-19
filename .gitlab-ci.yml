@@ -52,11 +52,14 @@ package:
   stage: package
   script:
     - helm package ${CI_PROJECT_DIR}/parte1/${MODULE}/${SERVICE} --version $CI_COMMIT_TAG
-    - curl --request POST --form 'chart=@${CI_PROJECT_DIR}/${SERVICE}-$CI_COMMIT_TAG.tgz' --user $GITLAB_USER:$ACCESS_TOKEN https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/packages/helm/api/stable/charts
   only:
     - tags
   tags:
     - docker
+  artifacts:
+    paths:
+      - ${SERVICE}-$CI_COMMIT_TAG.tgz
+    expire_in: 4 week   
 
 deploy:helm:
     stage: deploy
@@ -65,14 +68,12 @@ deploy:helm:
         - aws --version
         - helm version
     script:
-        - aws eks update-kubeconfig --name ${EKS_CLUSTER} --region ${EKS_REGION} --role-arn {EKS_ROLE}
-        - helm upgrade ${SERVICE} ${CI_PROJECT_DIR}/parte1/${MODULE}/${SERVICE} \
-            --repo $CI_REGISTRY_USER/${SERVICE}:${CI_PIPELINE_ID} \
-            --version $CI_COMMIT_TAG
+        - aws eks update-kubeconfig --name ${EKS_CLUSTER} --region ${AWS_REGION}
+        - helm upgrade --install -f ${CI_PROJECT_DIR}/parte1/${MODULE}/${SERVICE}/values.yaml \
+           ${SERVICE} ${CI_PROJECT_DIR}/parte1/${MODULE}/${SERVICE} --version $CI_COMMIT_TAG
     dependencies:
         - package
     only:
-      - master
       - tags    
 
 rollback:helm:
