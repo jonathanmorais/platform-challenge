@@ -75,7 +75,6 @@ infra:terraform:plan:
     - terraform plan
   only:
     - tags
-  when: manual
   
 infra:terraform:apply:
   <<: *terraform
@@ -85,7 +84,7 @@ infra:terraform:apply:
     AWS_ACCESS_KEY_ID: $PROD_AWS_ACCESS_KEY_ID
     AWS_SECRET_ACCESS_KEY: $PROD_AWS_SECRET_ACCESS_KEY
   script:
-    - cd $CI_PROJECT_DIR/parte2/infra/terraform/environments/${ENVIRONMENT}
+    - cd $CI_PROJECT_DIR/parte2/terraform/environments/${ENVIRONMENT}
     - terraform init    
     - terraform apply -auto-approve -target=module.network -target=module.cluster
   only:
@@ -100,7 +99,10 @@ deploy:terraform:helm:
     AWS_ACCESS_KEY_ID: $PROD_AWS_ACCESS_KEY_ID
     AWS_SECRET_ACCESS_KEY: $PROD_AWS_SECRET_ACCESS_KEY
   script:
-    - cd parte1/${MODULE}/terraform && terraform init && terraform apply -var-file="stg.tfvars" --auto-approve
+    - export TF_VAR_service=${SERVICE}
+    - export TF_VAR_helm_version=$CI_COMMIT_TAG
+    - export TF_VAR_cluster=$EKS_CLUSTER
+    - cd parte1/${MODULE}/terraform && terraform init && terraform apply --auto-approve
   dependencies:
       - package
   only:
@@ -116,7 +118,7 @@ deploy:terraform:service:
   script:
     - export TF_VAR_image=$CI_REGISTRY_USER/${SERVICE}
     - export TF_VAR_image_tag=$CI_COMMIT_TAG
-    - cd $CI_PROJECT_DIR/parte2/infra/terraform/environments/${ENVIRONMENT}
+    - cd $CI_PROJECT_DIR/parte2terraform/environments/${ENVIRONMENT}
     - terraform init    
     - terraform apply -auto-approve -target=module.app-helloworld
   only:
