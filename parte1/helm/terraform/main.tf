@@ -19,15 +19,16 @@ terraform {
 }
 
 data "aws_eks_cluster" "default" {
-  name = var.cluster_name
+  name = var.cluster
 }
 
 data "aws_eks_cluster_auth" "default" {
-  name = var.cluster_name
+  name = var.cluster
 }
 
 resource "helm_release" "demo-app" {
-  name  = "${var.service}-chart"
-  chart = "../${var.service}"
-  wait = false
+  name    = "${var.service}-chart"
+  chart   = "../${var.service}"
+  version = var.helm_version
+  wait    = false
 }
