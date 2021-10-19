@@ -64,6 +64,10 @@ package:
 deploy:helm:
     stage: deploy
     image: jshimko/kube-tools-aws:latest
+    variables:
+      ENVIRONMENT: "prod"
+      AWS_ACCESS_KEY_ID: $PROD_AWS_ACCESS_KEY_ID
+      AWS_SECRET_ACCESS_KEY: $PROD_AWS_SECRET_ACCESS_KEY        
     before_script:
         - aws --version
     script:
@@ -78,6 +82,10 @@ deploy:helm:
 rollback:helm:
     stage: rollback
     image: jshimko/kube-tools-aws:latest
+    variables:
+      ENVIRONMENT: "prod"
+      AWS_ACCESS_KEY_ID: $PROD_AWS_ACCESS_KEY_ID
+      AWS_SECRET_ACCESS_KEY: $PROD_AWS_SECRET_ACCESS_KEY
     before_script:
         - aws --version
         - helm version
@@ -114,7 +122,7 @@ deploy:terraform:infra:apply:
     - terraform init    
     - terraform apply -auto-approve -target=module.network -target=module.cluster
   only:
-    - tags    
+    - tags
  
 deploy:terraform:service:apply:
   <<: *terraform
