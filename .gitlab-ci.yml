@@ -116,11 +116,10 @@ deploy:terraform:service:
     AWS_SECRET_ACCESS_KEY: $PROD_AWS_SECRET_ACCESS_KEY
   script:
     - export TF_VAR_image=$CI_REGISTRY_USER/${SERVICE}
-    - export TF_VAR_image_tag=$CI_COMMIT_TAG
+    - export TF_VAR_image_tag=${CI_PIPELINE_ID}
     - cd $CI_PROJECT_DIR/parte2/terraform/environments/${ENVIRONMENT}
     - terraform init    
     - terraform apply -auto-approve -target=module.app-helloworld
   only:
     - tags
     - master
-  when: manual  
