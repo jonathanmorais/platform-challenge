@@ -79,7 +79,7 @@ variable "tg" {
 
   default = {
     deregistration_delay             = 300
-    health_check_path                = "/health"
+    health_check_path                = "/"
     health_check_healthy_threshold   = 5
     health_check_unhealthy_threshold = 2
     health_check_timeout             = 5

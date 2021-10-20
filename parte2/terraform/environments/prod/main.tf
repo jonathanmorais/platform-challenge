@@ -81,13 +81,13 @@ module "app-helloworld" {
 
   alb = {
     enable                     = true
-    public                     = false
+    public                     = true
     certificate_domain         = ""
     idle_timeout               = 300
-    health                     = "/health"
+    health                     = "/"
     enable_deletion_protection = true
     redirect_to_https          = true
-    subnets                    = module.network.private_subnets_ids
+    subnets                    = module.network.public_subnets_ids
     security_groups            = local.internal_network.security_groups
   }
 }
