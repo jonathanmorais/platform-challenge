@@ -20,7 +20,7 @@ variable "image_tag" {
 
 locals {
   internal_network = {
-    security_groups = ["sg-0aae7d4580397b06a"]
+    security_groups = ["sg-027cd102287e7a561"]
   }
   tags = {
     Managment   = "Terraform"
